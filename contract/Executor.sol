@@ -4,7 +4,7 @@ contract Executor {
 
     mapping(address => uint) nonce;
 
-    mapping(address => mapping(address => bool)) public whitelistedWorkers;
+    mapping(address => bool) public whitelistedWorkers;
 
     function executeTx(
         uint8 sigV,
@@ -15,12 +15,14 @@ contract Executor {
         address worker
     ) public {
 
-        require(worker == 0x0 || whitelistWorkers[worker] == true);
+        require(worker != address(0));
+        require(isWhitelisted(worker));
+
 
         address claimedSender = getAddress(data);
         // use EIP 191
         // 0x19 :: version :: relay :: whitelistOwner :: nonce :: destination :: data
-        bytes32 h = keccak256(byte(0x19), byte(0), this, listOwner, nonce[claimedSender], destination, data);
+        bytes32 h = keccak256(byte(0x19), byte(0), this, worker, nonce[claimedSender], destination, data);
         address addressFromSig = ecrecover(h, sigV, sigR, sigS);
 
         require(claimedSender == addressFromSig);
@@ -52,6 +54,10 @@ contract Executor {
      */
     function getNonce(address add) public constant returns (uint) {
         return nonce[add];
+    }
+
+    function isWhitelisted(address worker) public returns (bool) {
+        return whitelistedWorkers[worker];
     }
 
 }
