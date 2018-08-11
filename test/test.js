@@ -1,4 +1,4 @@
-var EIP20TokenMock = artifacts.require('./EIP20TokenMock.sol');
+//var EIP20TokenMock = artifacts.require('./EIP20TokenMock.sol');
 
 contract('EIP20TokenMock', function(accounts) {
 
@@ -14,7 +14,7 @@ contract('EIP20TokenMock', function(accounts) {
 	})
 })
 
-
+/*
 
 var secp256k1 = require('secp256k1');
 
@@ -83,3 +83,4 @@ function _encodeFunctionTxData(functionName, types, args) {
 
     return dataHex;
 }
+*/
