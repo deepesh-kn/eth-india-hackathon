@@ -32,7 +32,7 @@ contract Executor {
         require(destination.call(data));
     }
 
-    function whiteListWorker(address worker) public returns (bool){
+    function addWhiteListWorker(address worker) public returns (bool){
         whitelistedWorkers[worker] = true;
         return true;
     }
