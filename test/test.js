@@ -1,15 +1,68 @@
 //var EIP20TokenMock = artifacts.require('./EIP20TokenMock.sol');
 
-contract('EIP20TokenMock', function(accounts) {
+var secp256k1 = require('secp256k1');
 
-    var token;
-    var conversionRate = 1;
-    var conversionRateDecimals = 1;
-	var ost = 'OST';
+var Executor = artifacts.require('./Executor.sol');
+var CryptoJS = require('crypto-js');
+
+var web3Klass = require('web3');
+var web3Obj = new web3Klass();
+const leftPad = require('left-pad')
+
+
+function pad(n) {
+    assert.equal(typeof(n), 'string', "Passed in a non string")
+    let data
+    if (n.startsWith("0x")) {
+        data = '0x' + leftPad(n.slice(2), '64', '0')
+        assert.equal(data.length, 66, "packed incorrectly")
+        return data;
+    } else {
+        data = '0x' + leftPad(n, '64', '0')
+        assert.equal(data.length, 66, "packed incorrectly")
+        return data;
+    }
+}
+
+
+contract('Executor', function(accounts) {
+    var executor;
 	describe ('test', async () => {
 		before(async () => {
-            token = await EIP20TokenMock.new(conversionRate, conversionRateDecimals, ost, 'name', 18);
+            executor = await Executor.new();
 		});
+
+        it("t", async () => {
+
+            var functionName = "a";
+            var functionTypes = ["uint256"];
+            var functionParams = [0];
+
+            var fullName = functionName + '(' + functionTypes.join() + ')';
+            var signature = CryptoJS.SHA3(fullName, { outputLength: 256 }).toString(CryptoJS.enc.Hex).slice(0, 8);
+            var dataHex = signature + web3Obj.eth.abi.encodeParameters(functionTypes, functionParams);
+            data = '0x' + dataHex;
+
+
+            nonce = 0;
+            hashInput = '0x1900' + executor.address.slice(2) + accounts[1].slice(2) + pad(nonce.toString('16')).slice(2)
+                + executor.address.slice(2) + data.slice(2);
+
+
+            var sig = secp256k1.sign(new Buffer(hashInput.slice(2), 'hex'), new Buffer("8fbbbaceff30d4eea3e2ffa2dfedc3c053f78c1f53103e4ddc31309e6b1d5ea1", 'hex'));
+
+            //var sig = secp256k1.sign(dataHex, "0x8fbbbaceff30d4eea3e2ffa2dfedc3c053f78c1f53103e4ddc31309e6b1d5ea0");
+
+            var ret = {};
+            ret.r = sig.signature.slice(0, 32);
+            ret.s = sig.signature.slice(32, 64);
+            ret.v = sig.recovery + 27;
+
+
+
+            console.log("data: ",data);
+
+        })
 
 	})
 })
