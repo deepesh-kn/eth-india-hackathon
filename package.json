@@ -1,0 +1,13 @@
+{
+  "name": "eth-india-hacathon",
+  "version": "0.0.1",
+  "description": "",
+  "devDependencies": {
+    "abi-decoder": "1.0.9",
+    "assert": "1.4.1",
+    "bignumber.js": "4.1.0",
+    "ganache-cli": "6.1.0",
+    "truffle": "4.1.8",
+    "web3": "1.0.0-beta.33"
+  }
+}
