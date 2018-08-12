@@ -1,5 +1,12 @@
 var Executor = artifacts.require('./Executor_1.sol');
 
+
+let getMsg = async function (contractInstance, methodName, parameter){
+	
+	return (await executorInstance.contract.addWhiteListWorker.getData(accounts[3]));
+    //return (await contractInstance.contract.methodName.getData(parameter));
+}
+
 contract('Executor', function(accounts) {
     var executor;
     var ownerAddress = accounts[0];
@@ -31,18 +38,18 @@ contract('Executor', function(accounts) {
 
         it("executeSigned", async () => {
 
-            function executeSigned(
-                address _to,
-                address _from,
-                uint256 _value,
-                bytes _data,
-                uint256 _nonce,
-                uint256 _gasPrice,
-                uint256 _gasLimit,
-                address _gasToken,
-                OperationType _operationType,
-                bytes _extraHash,
-                bytes _messageSignatures)
+        //     function executeSigned(
+        //         address _to,
+        //         address _from,
+        //         uint256 _value,
+        //         bytes _data,
+        //         uint256 _nonce,
+        //         uint256 _gasPrice,
+        //         uint256 _gasLimit,
+        //         address _gasToken,
+        //         OperationType _operationType,
+        //         bytes _extraHash,
+        //         bytes _messageSignatures)
         });
 
 
