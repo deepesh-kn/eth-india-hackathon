@@ -186,7 +186,7 @@ contract('Executor', (accounts) => {
 		
 		it('test test',async function (){
 			console.log("contract :- ",await executorInstance.executeSha.call());
-			console.log("in web3 :- ",web3.utils.soliditySha3(web3.utils.hexToBytes(0x1))); //this works
+			console.log("in web3 :- ",web3.utils.soliditySha3(1)); //this works
 			// console.log("converting to hex","1".toString(16));
 			// console.log("converting to web3 ",web3.utils.toHex((1)));
 			console.log("web3 tohex",web3.utils.toHex(0x19));
