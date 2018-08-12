@@ -1,11 +1,6 @@
-var Executor = artifacts.require('./Executor_1.sol');
+var Executor = artifacts.require('./Executor.sol');
 
-
-let getMsg = async function (contractInstance, methodName, parameter){
-	
-	return (await executorInstance.contract.addWhiteListWorker.getData(accounts[3]));
-    //return (await contractInstance.contract.methodName.getData(parameter));
-}
+// Please note this is not actual test cases.
 
 contract('Executor', function(accounts) {
     var executor;
@@ -19,7 +14,6 @@ contract('Executor', function(accounts) {
             console.log("executor.address: ", executor.address);
             console.log("Before: balance of contract: " + executor.address, web3.eth.getBalance(executor.address).toString(10));
             console.log("Before: balance of owner: " + ownerAddress, web3.eth.getBalance(ownerAddress).toString(10));
-           // web3.eth.sendTransaction({ from: accounts[0], to: executor.address, value: web3.toWei(100, "ether") });
             await executor.fund({value:web3.toWei(100, "ether"), from: accounts[0]});
             console.log("After: balance of contract: " + executor.address, web3.eth.getBalance(executor.address).toString(10));
             console.log("AFter: balance of owner: " + ownerAddress, web3.eth.getBalance(ownerAddress).toString(10));
@@ -35,22 +29,31 @@ contract('Executor', function(accounts) {
             console.log("result2: ",result1);
         });
 
-
         it("executeSigned", async () => {
 
+            let gas = await executor.getGasUsage.call(0, 1);
+            console.log("gas: ",gas.toString(10));
+            let to = executor.address;
+            let from = ethLessAddress;
+            let value = 0;
+            let data = await executor.contract.addWhiteListAddress.getData(accounts[3]);
+            let nonce = await executor.getNonce.call(ethLessAddress);
+            let gasPrice = await web3.eth.gasPrice;
+            let gasLimit = 50000;
+            let gasToken = 0;
+            let operationType = 0;
+            let extraHash = "";
+            let messageSignatures = "";
 
-        //     function executeSigned(
-        //         address _to,
-        //         address _from,
-        //         uint256 _value,
-        //         bytes _data,
-        //         uint256 _nonce,
-        //         uint256 _gasPrice,
-        //         uint256 _gasLimit,
-        //         address _gasToken,
-        //         OperationType _operationType,
-        //         bytes _extraHash,
-        //         bytes _messageSignatures)
+            //console.log("Params: ", to, from, value, data, nonce.toString(10), gasPrice.toString(10), gasLimit.toString(10), gasToken, operationType, extraHash, messageSignatures);
+            let beforeBalance = web3.eth.getBalance(workerAddress).toString(10);
+            console.log("Before: balance of workerAddress: " + workerAddress, beforeBalance);
+            let result = await executor.executeSigned(to, from, value, data, nonce, gasPrice, gasLimit, gasToken, operationType, extraHash, messageSignatures, {from:workerAddress});
+            let afterBalance = web3.eth.getBalance(workerAddress).toString(10);
+            console.log("After: balance of workerAddress: " + workerAddress, afterBalance);
+            console.log("diff: ", afterBalance-beforeBalance);
+            console.log("result: ",result);
+            //console.log("amount: ",result.logs[0].args.location.toString(10));
 
         });
 
