@@ -246,7 +246,7 @@ contract('Executor', function(accounts) {
             var account_address = accounts[1];
             console.log( 'account_address: ', account_address);
 
-            var message = web3.utils.soliditySha3("test").slice(2);
+            var message = web3.utils.soliditySha3("test").substring(2);
 
 
             var functionName = "a";
@@ -254,8 +254,8 @@ contract('Executor', function(accounts) {
             var functionParams = [100];
 
             var fullName = functionName + '(' + functionTypes.join() + ')';
-            var signature = web3.utils.soliditySha3(fullName).slice(0, 8);
-            console.log(" web3.eth.abi.encodeParameters(functionTypes, functionParams): ", web3.abi.encodeFunctionSignature());
+            //var signature = web3.utils.soliditySha3(fullName).slice(0, 8);
+            //console.log(" web3.eth.abi.encodeParameters(functionTypes, functionParams): ", web3.eth.abi.encodeFunctionSignature()); //uncomment later on to check
             var data = signature + web3.eth.abi.encodeParameters(functionTypes, functionParams).slice(2);
             //data = '0x' + dataHex;
 
