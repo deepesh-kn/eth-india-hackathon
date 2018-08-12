@@ -27,7 +27,8 @@ contract Executor {
 
         require(claimedSender == addressFromSig);
 
-        nonce[claimedSender]++; //if we are going to do tx, update nonce
+        nonce[claimedSender]++;
+        //if we are going to do tx, update nonce
 
         require(destination.call(data));
     }
@@ -59,5 +60,37 @@ contract Executor {
     function isWhitelisted(address worker) public returns (bool) {
         return whitelistedWorkers[worker];
     }
+
+    function testRecovery(bytes32 h, uint8 v, bytes32 r, bytes32 s) returns (address) {
+        //        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        //        bytes32 prefixedHash = keccak256(prefix, hash);
+        //        return ecrecover(prefixedHash, v, r, s);
+
+
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        bytes32 prefixedHash = sha3(prefix, h);
+        address addr = ecrecover(prefixedHash, v, r, s);
+
+        return addr;
+    }
+
+    event Test(address _address);
+
+    function isSigned(address _addr, bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) returns (bool) {
+        address isVerified = (verifySignature(msgHash, v, r, s));
+        emit Test(isVerified);
+        return true;
+        //isVerified;
+    }
+
+    function verifySignature(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) returns (address) {
+        address _addr = ecrecover(msgHash, v, r, s);
+        return _addr;
+    }
+
+    function prefixed(bytes32 hash) internal pure returns (bytes32) {
+        return keccak256("\x19Ethereum Signed Message:\n32", hash);
+    }
+
 
 }
