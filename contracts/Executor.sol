@@ -4,7 +4,7 @@ contract Executor {
 
     event Test(address _address);
     mapping(address => uint) nonce;
-    event Test(address a);
+    //event Test(address a);
 
     mapping(address => bool) public whitelistedWorkers;
 
