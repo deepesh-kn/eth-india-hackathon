@@ -31,18 +31,18 @@ contract('Executor', function(accounts) {
 
         it("executeSigned", async () => {
 
-            function executeSigned(
-                address _to,
-                address _from,
-                uint256 _value,
-                bytes _data,
-                uint256 _nonce,
-                uint256 _gasPrice,
-                uint256 _gasLimit,
-                address _gasToken,
-                OperationType _operationType,
-                bytes _extraHash,
-                bytes _messageSignatures)
+            // function executeSigned(
+            //     address _to,
+            //     address _from,
+            //     uint256 _value,
+            //     bytes _data,
+            //     uint256 _nonce,
+            //     uint256 _gasPrice,
+            //     uint256 _gasLimit,
+            //     address _gasToken,
+            //     OperationType _operationType,
+            //     bytes _extraHash,
+            //     bytes _messageSignatures)
         });
 
 
