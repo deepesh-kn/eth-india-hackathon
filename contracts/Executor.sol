@@ -2,6 +2,7 @@ pragma solidity 0.4.24;
 
 contract Executor {
 
+    event Test(address _address);
     mapping(address => uint) nonce;
     event Test(address a);
 

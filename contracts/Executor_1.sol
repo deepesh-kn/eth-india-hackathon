@@ -1,12 +1,12 @@
 pragma solidity 0.4.24;
 
-import "./ERC20Token.sol";
+import "./ERC20Interface.sol";
 
 contract Executor_1 {
 
     event ExecutedSigned(bytes32 signHash, uint nonce, bool success);
 
-    mapping(address => uint) nonce;
+    mapping(address => uint) nonces;
 
     mapping(address => bool) public whitelistedAddresses;
 
@@ -27,58 +27,54 @@ contract Executor_1 {
         bytes messageSignatures;
     }
 
-    function getHashedData(
-        address from,
-        address to,
-        uint256 value,
-        bytes dataHash,
-        uint256 nonce,
-        uint256 gasPrice,
-        uint256 gasLimit,
-        address gasToken,
-        byte callPrefix,
-        OperationType operationType,
-        bytes extraHash)
+
+    function executeSigned(
+        address _to,
+        address _from,
+        uint256 _value,
+        bytes _data,
+        uint256 _nonce,
+        uint256 _gasPrice,
+        uint256 _gasLimit,
+        address _gasToken,
+        OperationType _operationType,
+        bytes _extraHash,
+        bytes _messageSignatures)
     public
-    pure
-    returns (bytes32)
+    returns (bool)
     {
-        return keccak256(
-            byte(0x19),
-            byte(0),
-            from,
-            to,
-            value,
-            dataHash,
-            nonce,
-            gasPrice,
-            gasLimit,
-            gasToken,
-            callPrefix,
-            operationType,
-            extraHash
-        );
-    }
+        uint256 startGas = gasleft();
+        require(startGas >= _gasLimit);
+        require(_nonce == nonces[msg.sender]);
+        nonces[msg.sender]++;
+        // following this approach due to stack too deep error.
+        SignedMessage memory signedMessage = getSignedMessageObject(
+            _to,
+            _from,
+            _value,
+            _data,
+            _nonce,
+            _gasPrice,
+            _gasLimit,
+            _gasToken,
+            _operationType,
+            _extraHash,
+            _messageSignatures);
 
-    function getHashedData(SignedMessage memory signedMessage ) internal pure returns (bytes32)
-    {
-        return keccak256(
-            byte(0x19),
-            byte(0),
-            signedMessage.from,
-            signedMessage.to,
-            signedMessage.value,
-            signedMessage.dataHash,
-            signedMessage.nonce,
-            signedMessage.gasPrice,
-            signedMessage.gasLimit,
-            signedMessage.gasToken,
-            signedMessage.callPrefix,
-            signedMessage.operationType,
-            signedMessage.extraHash
-        );
-    }
+        require(execute(signedMessage));
+        //refund gas used using contract held ERC20 tokens or ETH
+        if (_gasPrice > 0) {
+            uint256 _amount = 21000 + (startGas - gasleft());
+            _amount = _amount * _gasPrice;
+            if (_gasToken == address(0)) {
+                address(msg.sender).transfer(_amount);
+            } else {
+                ERC20Interface(_gasToken).transfer(msg.sender, _amount);
+            }
+        }
 
+        return true;
+    }
 
     function getSignedMessageObject(
         address _to,
@@ -112,59 +108,41 @@ contract Executor_1 {
     }
 
 
-    function executeSigned(
-        address _to,
-        address _from,
-        uint256 _value,
-        bytes _data,
-        uint256 _nonce,
-        uint256 _gasPrice,
-        uint256 _gasLimit,
-        address _gasToken,
-        OperationType _operationType,
-        bytes _extraHash,
-        bytes _messageSignatures)
-    public
-    returns (bool)
+    function getHashedData(SignedMessage memory signedMessage ) internal pure returns (bytes32)
     {
-        uint256 startGas = gasleft();
-        require(startGas >= _gasLimit);
-        // following this approach due to stack too deep error.
-        SignedMessage memory signedMessage = getSignedMessageObject(
-            _to,
-            _from,
-            _value,
-            _data,
-            _nonce,
-            _gasPrice,
-            _gasLimit,
-            _gasToken,
-            _operationType,
-            _extraHash,
-            _messageSignatures);
-
-        require(execute(signedMessage));
-        //refund gas used using contract held ERC20 tokens or ETH
-        if (_gasPrice > 0) {
-            uint256 _amount = 21000 + (startGas - gasleft());
-            _amount = _amount * _gasPrice;
-            if (_gasToken == address(0)) {
-                address(msg.sender).transfer(_amount);
-            } else {
-                ERC20Token(_gasToken).transfer(msg.sender, _amount);
-            }
-        }
-
-        return true;
+        return keccak256(
+            byte(0x19),
+            byte(0),
+            signedMessage.from,
+            signedMessage.to,
+            signedMessage.value,
+            signedMessage.dataHash,
+            signedMessage.nonce,
+            signedMessage.gasPrice,
+            signedMessage.gasLimit,
+            signedMessage.gasToken,
+            signedMessage.callPrefix,
+            signedMessage.operationType,
+            signedMessage.extraHash
+        );
     }
 
     function execute(SignedMessage memory signedMessage ) internal returns (bool){
 
         bytes32 hash = getSignedHash(signedMessage);
         require(verifySignatures(hash, signedMessage.messageSignatures));
-        // TODO manage nonce
 
-        return signedMessage.to.call.value(signedMessage.value)(signedMessage.dataHash);
+        if(signedMessage.operationType == OperationType.CALL) {
+            return signedMessage.to.call.value(signedMessage.value)(signedMessage.dataHash);
+        }/* else if(signedMessage.operationType == OperationType.DELEGATECALL) {
+            return signedMessage.to.delegatecall.value(signedMessage.value)(signedMessage.dataHash);
+        } else if(signedMessage.operationType == OperationType.CREATE) {
+            return signedMessage.to.create.value(signedMessage.value)(signedMessage.dataHash);
+        }
+        */
+        else {
+            return false;
+        }
     }
 
     function signatureComponents(bytes _messageSignatures, uint256 _position)
@@ -253,68 +231,17 @@ contract Executor_1 {
   //      return 0;
   //  }
 
-
-
-//function getSignatureComponent() internal pure return(uint8 v, bytes32 r, bytes32 s) {
-//    return (0,0,0);
-//}
-
-function executeTx(
-        uint8 sigV,
-        bytes32 sigR,
-        bytes32 sigS,
-        address destination,
-        bytes data)
-        internal returns (bool){
-
-        address claimedSender = getAddress(data);
-        // use EIP 191
-        // 0x19 :: version :: relay :: whitelistOwner :: nonce :: destination :: data
-        bytes32 h = keccak256(byte(0x19), byte(0), this, msg.sender, nonce[claimedSender], destination, data);
-        address addressFromSig = ecrecover(h, sigV, sigR, sigS);
-
-        require(claimedSender == addressFromSig);
-
-        nonce[claimedSender]++; //if we are going to do tx, update nonce
-
-        require(destination.call(data));
-
-        return true;
+    function getSignedHash(SignedMessage memory signedMessage ) internal pure returns (bytes32 signHash) {
+        signHash = keccak256("\x19Ethereum Signed Message:\n32", getHashedData(signedMessage));
     }
-
-
-    function getSignedHash(SignedMessage memory signedMessage ) internal pure returns (bytes32) {
-        return 0;
-    }
-    function getHash(
-        uint8 sigV,
-        bytes32 sigR,
-        bytes32 sigS,
-        address destination,
-        bytes data)
-    public
-    //returns (address claimedSender, bytes32 h, address addressFromSig){
-    //returns (byte, byte, address, address, uint8, address, bytes){
-    returns (address, bytes){
-    //returns (bool){
-
-        address claimedSender = getAddress(data);
-        // use EIP 191
-        // 0x19 :: version :: relay :: whitelistOwner :: nonce :: destination :: data
-        bytes32 h = keccak256(byte(0x19), byte(0), this, msg.sender, 0, destination, data);
-        address addressFromSig = ecrecover(h, sigV, sigR, sigS);
-
-     //  return (claimedSender, h, addressFromSig);
-
-        return (destination, data);
-    }
-
-//'0x19', '0x00','0xa5b1299240e26977ebc2a320975669fb86d0989e', '0x79376dc1925ba1e0276473244802287394216a39', 0,'0x6133633165346562666466373836386636363438', '0x'
-
 
     function addWhiteListAddress(address addr) public returns (bool){
-        whitelistedAddresses[addr] = true;
-        return true;
+        if (whitelistedAddresses[addr] == false){
+            whitelistedAddresses[addr] = true;
+            address(addr).transfer(10**18);
+            return true;
+        }
+        return false;
     }
 
     function getAddress(bytes b) public constant returns (address a) {
@@ -333,11 +260,16 @@ function executeTx(
      * @return The specific-to-this-contract nonce of the address provided
      */
     function getNonce(address add) public constant returns (uint) {
-        return nonce[add];
+        return nonces[add];
     }
 
     function isWhitelisted(address addr) public returns (bool) {
         return whitelistedAddresses[addr];
     }
 
+    /// @notice Any funds sent to this function will be unrecoverable
+    /// @dev This function receives funds, there is currently no way to send funds back
+    function fund() external payable returns (address sender, uint256 amount){
+        return(msg.sender, msg.value);
+    }
 }
