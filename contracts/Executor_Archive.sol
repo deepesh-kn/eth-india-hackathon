@@ -1,6 +1,6 @@
 pragma solidity 0.4.24;
 
-contract Executor {
+contract Executor_Archive {
 
     event Test(address _address);
     event HashWithPrefix(bytes32 h);

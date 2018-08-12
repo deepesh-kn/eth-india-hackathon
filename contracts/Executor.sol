@@ -2,9 +2,11 @@ pragma solidity 0.4.24;
 
 /*
 Credits:
-Following are some helpful refernces we went through in past 24 hrs.
+Following are some helpful references we went through in past 24 hrs.
 references: https://eips.ethereum.org/EIPS/eip-1077
             https://eips.ethereum.org/EIPS/eip-191
+            https://github.com/ethereum/EIPs/issues/725
+            https://github.com/ethereum/EIPs/issues/735
             https://github.com/status-im/contracts/tree/73-economic-abstraction
             https://github.com/uport-project/uport-identity
 */
