@@ -3,6 +3,7 @@ pragma solidity 0.4.24;
 contract Executor {
 
     mapping(address => uint) nonce;
+    event Test(address a);
 
     mapping(address => bool) public whitelistedWorkers;
 
@@ -13,19 +14,21 @@ contract Executor {
         address destination,
         bytes data,
         address worker
-    ) public {
+    ) public returns(bool){
 
         require(worker != address(0));
-        require(isWhitelisted(worker));
+       // require(isWhitelisted(worker));
 
 
         address claimedSender = getAddress(data);
         // use EIP 191
         // 0x19 :: version :: relay :: whitelistOwner :: nonce :: destination :: data
-        bytes32 h = keccak256(byte(0x19), byte(0), this, worker, nonce[claimedSender], destination, data);
-        address addressFromSig = ecrecover(h, sigV, sigR, sigS);
-
-        require(claimedSender == addressFromSig);
+        //bytes32 h = keccak256(byte(0x19), byte(0), this, worker, nonce[claimedSender], destination, data);
+        bytes32 h = keccak256(byte(0x19), byte(0), this, worker, 123, destination, data);
+        bytes32 hashWithPrefix = keccak256("\x19Ethereum Signed Message:\n32",h);
+        address addressFromSig = ecrecover(hashWithPrefix, sigV, sigR, sigS);
+        emit Test(addressFromSig);
+        //require(claimedSender == addressFromSig);
 
         nonce[claimedSender]++;
         //if we are going to do tx, update nonce
@@ -100,7 +103,7 @@ contract Executor {
 
         return addr;
     }
-    
+
     function isSigned(address _addr, bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) returns (bool) {
         address isVerified = (verifySignature(msgHash, v, r, s));
         emit Test(isVerified);

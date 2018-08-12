@@ -29,7 +29,6 @@
 
 
 
-var	executor = artifacts.require('./../Executor.sol');
 // var web3 = require('web3');
 ///
 /// Test stories
@@ -46,22 +45,14 @@ var	executor = artifacts.require('./../Executor.sol');
 
 const Web3 = require('web3')
 	, web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+var	executor = artifacts.require('./Executor.sol');
+
 contract('Executor', (accounts) => {
 	
 	
 	async function createExecutor() {
 		return await executor.new({ from: accounts[0], gas: 3500000 })
 	}
-	
-	describe('Basic properties', async () => {
-		
-		var executorInstance = null
-		
-		before(async () => {
-			executorInstance = await createExecutor();
-		})
-		
-	})
 	
 	describe('Finalize', async () => {
 		
@@ -74,7 +65,9 @@ contract('Executor', (accounts) => {
 		
 		
 		it("getData of whitelist", async () => {
-			let s = await executorInstance.contract.addWhiteListWorker.getData(accounts[3]);
+			//let s = await executorInstance.contract.addWhiteListWorker.getData(accounts[3]);
+			console.log("instance test",executorInstance);
+			await executorInstance.addWhiteListWorker(accounts[0]);
 			//console.log("Status",await executorInstance.addWhiteListWorker.call(accounts[5]));
 			//console.log("test",s);
 			
@@ -196,17 +189,43 @@ contract('Executor', (accounts) => {
 			console.log("s :-",s);
 			console.log("signature",signature);
 			let result = await executorInstance.isSigned(signer,fixed_msg_sha, v_decimal,r,s);
-			console.log(JSON.stringify(result));
+			//console.log(JSON.stringify(result));
 			console.log(accounts[0]);
 		});
 		
 		
 		it('execute transaction', async function () {
-		
+			let addWhiteListWorkerGetData = await executorInstance.contract.addWhiteListWorker.getData(accounts[3]);
+
+			//getting v,r,s values
+			let signer = accounts[0]
+				, msg = web3.utils.soliditySha3(addWhiteListWorkerGetData)
+				, prefix = `\x19Ethereum Signed Message:\n${32}`
+				, fixed_msg_sha = web3.utils.soliditySha3(prefix, msg);
+			let sha3_hash_input = web3.utils.soliditySha3(0x19, 0,executorInstance.address, accounts[1], 123, executorInstance.address, addWhiteListWorkerGetData);
+			//console.log("Fixed_msg_sha",fixed_msg_sha);
+			let sha_with_prefix = web3.utils.soliditySha3(prefix,sha3_hash_input);
+			let signature = await web3.eth.sign(sha3_hash_input, signer);
+			signature = signature.slice(2);
+			const r = '0x' + signature.slice(0, 64);
+			const s = '0x' + signature.slice(64, 128);
+			const v = '0x' + signature.slice(128, 130);
+			let v_decimal = web3.utils.toDecimal(v) + 27;
+			console.log("v :- ",v);
+			console.log("v_decimal",v_decimal);
+			console.log("r :- ",r);
+			console.log("s :-",s);
+			console.log("signature",signature);
+			let result =  await executorInstance.executeTx(v_decimal, r, s,executorInstance.address,addWhiteListWorkerGetData,accounts[1]);
+			console.log(JSON.stringify(result));
+			//let result = await executorInstance.executeTx(v_decimal, r, s, executorInstance.address,addWhiteListWorkerGetData,accounts[1]);
+			console.log("Signer account",signer);
+			console.log("should be true for ",accounts[3]," ",await executorInstance.whitelistedWorkers(accounts[3]));
+			console.log("account[3] :- ",accounts[3]);
+			//console.log("should be false",await executorInstance.whitelistedWorkers(accounts[6]));
 			
-		
-		
-		
+			
+			
 		});
 		
 		

@@ -2,7 +2,7 @@ pragma solidity 0.4.24;
 
 import "./ERC20Token.sol";
 
-contract Executor {
+contract Executor_1 {
 
     event ExecutedSigned(bytes32 signHash, uint nonce, bool success);
 
