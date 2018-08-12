@@ -33,6 +33,33 @@ contract Executor {
         require(destination.call(data));
     }
 
+
+    function getHash(
+        uint8 sigV,
+        bytes32 sigR,
+        bytes32 sigS,
+        address destination,
+        bytes data)
+    public
+    //returns (address claimedSender, bytes32 h, address addressFromSig){
+    //returns (byte, byte, address, address, uint8, address, bytes){
+    returns (address, bytes){
+    //returns (bool){
+
+        address claimedSender = getAddress(data);
+        // use EIP 191
+        // 0x19 :: version :: relay :: whitelistOwner :: nonce :: destination :: data
+        bytes32 h = keccak256(byte(0x19), byte(0), this, msg.sender, 0, destination, data);
+        address addressFromSig = ecrecover(h, sigV, sigR, sigS);
+
+     //  return (claimedSender, h, addressFromSig);
+
+        return (destination, data);
+    }
+
+//'0x19', '0x00','0xa5b1299240e26977ebc2a320975669fb86d0989e', '0x79376dc1925ba1e0276473244802287394216a39', 0,'0x6133633165346562666466373836386636363438', '0x'
+
+
     function addWhiteListWorker(address worker) public returns (bool){
         whitelistedWorkers[worker] = true;
         return true;
@@ -73,9 +100,7 @@ contract Executor {
 
         return addr;
     }
-
-    event Test(address _address);
-
+    
     function isSigned(address _addr, bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) returns (bool) {
         address isVerified = (verifySignature(msgHash, v, r, s));
         emit Test(isVerified);
