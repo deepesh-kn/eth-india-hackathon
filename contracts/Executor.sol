@@ -1,5 +1,14 @@
 pragma solidity 0.4.24;
 
+/*
+Credits:
+Following are some helpful refernces we went through in past 24 hrs.
+references: https://eips.ethereum.org/EIPS/eip-1077
+            https://eips.ethereum.org/EIPS/eip-191
+            https://github.com/status-im/contracts/tree/73-economic-abstraction
+            https://github.com/uport-project/uport-identity
+*/
+
 import "./ERC20Interface.sol";
 
 /**
@@ -7,6 +16,7 @@ import "./ERC20Interface.sol";
  *  @author OST Auxiliary team (EthIndia hackathon)
  *  @notice This is not 100% working code. Few functionality is not implemented.
  *          This is yet compatible with ERC-725 standard
+ *
  */
 
 contract Executor {

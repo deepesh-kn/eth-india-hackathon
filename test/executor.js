@@ -1,11 +1,6 @@
-var Executor = artifacts.require('./Executor_1.sol');
+var Executor = artifacts.require('./Executor.sol');
 
-
-let getMsg = async function (contractInstance, methodName, parameter){
-	
-	return (await executorInstance.contract.addWhiteListWorker.getData(accounts[3]));
-    //return (await contractInstance.contract.methodName.getData(parameter));
-}
+// Please note this is not actual test cases.
 
 contract('Executor', function(accounts) {
     var executor;
@@ -19,7 +14,6 @@ contract('Executor', function(accounts) {
             console.log("executor.address: ", executor.address);
             console.log("Before: balance of contract: " + executor.address, web3.eth.getBalance(executor.address).toString(10));
             console.log("Before: balance of owner: " + ownerAddress, web3.eth.getBalance(ownerAddress).toString(10));
-           // web3.eth.sendTransaction({ from: accounts[0], to: executor.address, value: web3.toWei(100, "ether") });
             await executor.fund({value:web3.toWei(100, "ether"), from: accounts[0]});
             console.log("After: balance of contract: " + executor.address, web3.eth.getBalance(executor.address).toString(10));
             console.log("AFter: balance of owner: " + ownerAddress, web3.eth.getBalance(ownerAddress).toString(10));
@@ -34,7 +28,6 @@ contract('Executor', function(accounts) {
             result1 = await executor.isWhitelisted.call(accounts[4]);
             console.log("result2: ",result1);
         });
-
 
         it("executeSigned", async () => {
 
