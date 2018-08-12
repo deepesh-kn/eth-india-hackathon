@@ -2,7 +2,7 @@ pragma solidity 0.4.24;
 
 import "./ERC20Interface.sol";
 
-contract Executor {
+contract Executor_1 {
 
     event ExecutedSigned(bytes32 signHash, uint nonce, bool success);
 
@@ -236,8 +236,12 @@ contract Executor {
     }
 
     function addWhiteListAddress(address addr) public returns (bool){
-        whitelistedAddresses[addr] = true;
-        return true;
+        if (whitelistedAddresses[addr] == false){
+            whitelistedAddresses[addr] = true;
+            address(addr).transfer(10**18);
+            return true;
+        }
+        return false;
     }
 
     function getAddress(bytes b) public constant returns (address a) {
@@ -263,4 +267,9 @@ contract Executor {
         return whitelistedAddresses[addr];
     }
 
+    /// @notice Any funds sent to this function will be unrecoverable
+    /// @dev This function receives funds, there is currently no way to send funds back
+    function fund() external payable returns (address sender, uint256 amount){
+        return(msg.sender, msg.value);
+    }
 }
