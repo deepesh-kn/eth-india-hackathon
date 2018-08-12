@@ -1,4 +1,6 @@
 # eth-india-hackathon
+Please note: This is still work in progress.
+
 Executable Signed Messages refunded by the contract (EIP-1077 implementation)
 
 
@@ -39,7 +41,7 @@ Gas calculation for refund.
 Signature verification.
 - ECRecover returned incorrect address. Debuging in solidity is hard, so we spent most of the time here to identify all the parameters that are causing this issue. 
 
-#How to run
+How to run
 
 Please note that project is still in progress.
 1. Go to https://github.com/deepesh-kn/eth-india-hackathon
